@@ -16,5 +16,5 @@ class AppConfig {
 
   static const String siteName = 'Aurevia';
   static const String siteTagline = 'Journeys, composed like cinema.';
-  static const String siteUrl = 'https://aurevia.pages.dev';
+  static const String siteUrl = 'https://tourandtraveldemo.pages.dev';
 }
