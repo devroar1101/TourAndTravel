@@ -375,15 +375,24 @@ begin
 end $$;
 
 -- Admins table: an admin may see the admin roster; only owners manage it.
+-- Both checks go through security-definer helpers — an inline subquery on
+-- public.admins inside its own policy would recurse (error 42P17).
+create or replace function public.is_owner()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.admins
+    where user_id = auth.uid() and role = 'owner' and deleted_at is null
+  );
+$$;
+
 create policy "admins read roster" on public.admins
   for select using (public.is_admin());
-create policy "owners manage roster" on public.admins
-  for all using (
-    exists (
-      select 1 from public.admins a
-      where a.user_id = auth.uid() and a.role = 'owner' and a.deleted_at is null
-    )
-  );
+create policy "owners insert roster" on public.admins
+  for insert with check (public.is_owner());
+create policy "owners update roster" on public.admins
+  for update using (public.is_owner());
+create policy "owners delete roster" on public.admins
+  for delete using (public.is_owner());
 
 -- ----------------------------------------------------------------------------
 -- Storage buckets
