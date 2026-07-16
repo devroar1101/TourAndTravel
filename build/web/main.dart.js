@@ -34325,7 +34325,7 @@ var $async$aDq=A.q(function(a,b){if(a===1)return A.r(b,r)
 for(;;)switch(s){case 0:p=$.b1t
 if(p){s=1
 break}s=3
-return A.o(A.aDv("sb_publishable_WPwoNtiuMJ1UQlxNOBcBzw_hz5ITD23","https://YOURREF.supabase.co"),$async$aDq)
+return A.o(A.aDv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YWhjdnRiZWx3ZXFkcXd5a3VxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNzg0MzAsImV4cCI6MjA5OTc1NDQzMH0.CzOFvuudwNE0TTzD7oVE0aaZZrAXL5NuSggaeoVZREs","https://jxahcvtbelweqdqwykuq.supabase.co"),$async$aDq)
 case 3:$.b1t=!0
 case 1:return A.t(q,r)}})
 return A.u($async$aDq,r)},
