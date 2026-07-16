@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/content_models.dart';
 import '../seed/seed_content.dart';
+import 'repository_utils.dart';
 
 /// Gallery photographs — public reads and admin CRUD.
 class GalleryRepository {
@@ -14,15 +15,19 @@ class GalleryRepository {
   Future<List<GalleryItem>> fetchAll() async {
     final client = _client;
     if (client == null) return List.unmodifiable(_memory);
-    final rows = await client
-        .from('gallery')
-        .select()
-        .isFilter('deleted_at', null)
-        .order('created_at', ascending: false);
-    final list = (rows as List)
-        .map((e) => GalleryItem.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
-    return list.isEmpty ? List.unmodifiable(_memory) : list;
+    try {
+      final rows = await client
+          .from('gallery')
+          .select()
+          .isFilter('deleted_at', null)
+          .order('created_at', ascending: false);
+      final list = (rows as List)
+          .map((e) => GalleryItem.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      return list.isEmpty ? List.unmodifiable(_memory) : list;
+    } catch (_) {
+      return List.unmodifiable(_memory);
+    }
   }
 
   Future<void> upsert(GalleryItem item) async {
@@ -36,7 +41,7 @@ class GalleryRepository {
       }
       return;
     }
-    await client.from('gallery').upsert(item.toJson());
+    await client.from('gallery').upsert(upsertPayload(item.toJson()));
   }
 
   Future<void> delete(String id) async {
@@ -45,6 +50,7 @@ class GalleryRepository {
       _memory.removeWhere((g) => g.id == id);
       return;
     }
+    if (!isDatabaseId(id)) return;
     await client
         .from('gallery')
         .update({'deleted_at': DateTime.now().toIso8601String()})
@@ -63,15 +69,19 @@ class TestimonialRepository {
   Future<List<Testimonial>> fetchAll() async {
     final client = _client;
     if (client == null) return List.unmodifiable(_memory);
-    final rows = await client
-        .from('testimonials')
-        .select()
-        .isFilter('deleted_at', null)
-        .order('created_at', ascending: false);
-    final list = (rows as List)
-        .map((e) => Testimonial.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
-    return list.isEmpty ? List.unmodifiable(_memory) : list;
+    try {
+      final rows = await client
+          .from('testimonials')
+          .select()
+          .isFilter('deleted_at', null)
+          .order('created_at', ascending: false);
+      final list = (rows as List)
+          .map((e) => Testimonial.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      return list.isEmpty ? List.unmodifiable(_memory) : list;
+    } catch (_) {
+      return List.unmodifiable(_memory);
+    }
   }
 
   Future<void> upsert(Testimonial item) async {
@@ -85,7 +95,9 @@ class TestimonialRepository {
       }
       return;
     }
-    await client.from('testimonials').upsert(item.toJson());
+    await client
+        .from('testimonials')
+        .upsert(upsertPayload(item.toJson()));
   }
 
   Future<void> delete(String id) async {
@@ -94,6 +106,7 @@ class TestimonialRepository {
       _memory.removeWhere((t) => t.id == id);
       return;
     }
+    if (!isDatabaseId(id)) return;
     await client
         .from('testimonials')
         .update({'deleted_at': DateTime.now().toIso8601String()})
@@ -112,15 +125,19 @@ class FaqRepository {
   Future<List<FaqItem>> fetchAll() async {
     final client = _client;
     if (client == null) return List.unmodifiable(_memory);
-    final rows = await client
-        .from('faqs')
-        .select()
-        .isFilter('deleted_at', null)
-        .order('created_at');
-    final list = (rows as List)
-        .map((e) => FaqItem.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
-    return list.isEmpty ? List.unmodifiable(_memory) : list;
+    try {
+      final rows = await client
+          .from('faqs')
+          .select()
+          .isFilter('deleted_at', null)
+          .order('created_at');
+      final list = (rows as List)
+          .map((e) => FaqItem.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      return list.isEmpty ? List.unmodifiable(_memory) : list;
+    } catch (_) {
+      return List.unmodifiable(_memory);
+    }
   }
 
   Future<void> upsert(FaqItem item) async {
@@ -134,7 +151,7 @@ class FaqRepository {
       }
       return;
     }
-    await client.from('faqs').upsert(item.toJson());
+    await client.from('faqs').upsert(upsertPayload(item.toJson()));
   }
 
   Future<void> delete(String id) async {
@@ -143,6 +160,7 @@ class FaqRepository {
       _memory.removeWhere((f) => f.id == id);
       return;
     }
+    if (!isDatabaseId(id)) return;
     await client
         .from('faqs')
         .update({'deleted_at': DateTime.now().toIso8601String()})

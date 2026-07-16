@@ -12,15 +12,20 @@ class SupabaseService {
   /// Safe to call unconditionally from `main`.
   static Future<void> init() async {
     if (!AppConfig.isSupabaseConfigured || _initialised) return;
-    await Supabase.initialize(
-      url: AppConfig.supabaseUrl,
-      // Supabase still issues "anon" keys on every project; the parameter is
-      // merely renamed upstream. Swap to `publishableKey` once the dashboard
-      // migrates fully.
-      // ignore: deprecated_member_use
-      anonKey: AppConfig.supabaseAnonKey,
-    );
-    _initialised = true;
+    try {
+      await Supabase.initialize(
+        url: AppConfig.supabaseUrl,
+        // Supabase still issues "anon" keys on every project; the parameter
+        // is merely renamed upstream. Swap to `publishableKey` once the
+        // dashboard migrates fully.
+        // ignore: deprecated_member_use
+        anonKey: AppConfig.supabaseAnonKey,
+      );
+      _initialised = true;
+    } catch (_) {
+      // Misconfigured credentials must never brick the site; the app falls
+      // back to showcase mode and the repositories serve bundled content.
+    }
   }
 
   /// The active client, or `null` in showcase mode.

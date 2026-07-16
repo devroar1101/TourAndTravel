@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/destination.dart';
 import '../seed/seed_destinations.dart';
+import 'repository_utils.dart';
 
 /// Destinations — reads for the public site, full CRUD for the admin panel.
 ///
@@ -17,15 +18,21 @@ class DestinationRepository {
   Future<List<Destination>> fetchAll() async {
     final client = _client;
     if (client == null) return List.unmodifiable(_memory);
-    final rows = await client
-        .from('destinations')
-        .select()
-        .isFilter('deleted_at', null)
-        .order('name');
-    final list = (rows as List)
-        .map((e) => Destination.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
-    return list.isEmpty ? List.unmodifiable(_memory) : list;
+    try {
+      final rows = await client
+          .from('destinations')
+          .select()
+          .isFilter('deleted_at', null)
+          .order('name');
+      final list = (rows as List)
+          .map((e) => Destination.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+      return list.isEmpty ? List.unmodifiable(_memory) : list;
+    } catch (_) {
+      // The public site must never break on a backend hiccup; serve the
+      // bundled catalogue until the database is reachable again.
+      return List.unmodifiable(_memory);
+    }
   }
 
   Future<Destination?> fetchBySlug(String slug) async {
@@ -47,7 +54,9 @@ class DestinationRepository {
       }
       return;
     }
-    await client.from('destinations').upsert(destination.toJson());
+    await client
+        .from('destinations')
+        .upsert(upsertPayload(destination.toJson()));
   }
 
   Future<void> delete(String id) async {
@@ -56,6 +65,8 @@ class DestinationRepository {
       _memory.removeWhere((d) => d.id == id);
       return;
     }
+    // Bundled-catalogue rows have no database counterpart to delete.
+    if (!isDatabaseId(id)) return;
     await client
         .from('destinations')
         .update({'deleted_at': DateTime.now().toIso8601String()})
